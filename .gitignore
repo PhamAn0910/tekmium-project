@@ -1,0 +1,23 @@
+# Claude Code / local agent adapters
+.claude/
+
+# Environment variables & secrets
+.env
+.env*.local
+
+# Python / Virtualenv
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+
+# Node
+node_modules/
+
+# OS / Editor
+.DS_Store
+*.swp
+.idea/
+.vscode/
