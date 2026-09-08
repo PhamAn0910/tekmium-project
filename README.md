@@ -165,15 +165,15 @@ relying only on the LLM's pre-existing knowledge.
 
 ## 5. Tech Stack
 
-| Component           | Technology |
-| ------------------- | ---------- |
-| Frontend            | TBD        |
-| Backend             | TBD        |
-| LLM                 | TBD        |
-| Embedding Model     | TBD        |
-| Vector Database     | TBD        |
-| Document Processing | TBD        |
-| Language            | TBD        |
+| Component           | Technology                                  |
+| ------------------- | ------------------------------------------- |
+| Frontend            | Next.js (App Router, Tailwind CSS)          |
+| Backend             | Next.js Route Handlers (Vercel Serverless)  |
+| LLM                 | Google Gemini 1.5 Flash (via Vercel AI SDK) |
+| Embedding Model     | text-embedding-004 (via Vercel AI SDK)      |
+| Vector Database     | Pinecone Serverless                         |
+| Document Processing | Custom TypeScript Splitter                  |
+| Language            | TypeScript                                  |
 
 ---
 
