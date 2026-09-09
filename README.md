@@ -185,7 +185,7 @@ In development.
 ### Progress
 
 * [ ] Project setup
-* [ ] Chunking
+* [x] Chunking
 * [ ] Embeddings + vector database
 * [ ] Retrieval
 * [ ] LLM integration + source citation

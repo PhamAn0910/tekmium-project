@@ -1,6 +1,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
+import { splitText } from "./text-splitter.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -107,12 +108,24 @@ async function main() {
   // We use a Set to avoid any duplicates
   const finalCorpusSet = new Set([...goldContexts, ...distractors]);
   
-  // 3. Write Knowledge Base (JSONL)
+  // 3. Chunk and write Knowledge Base (JSONL)
+  const corpus = [...finalCorpusSet].filter(t => t.trim());
   const kbLines: string[] = [];
-  for (const text of finalCorpusSet) {
-    if (!text.trim()) continue;
-    kbLines.push(JSON.stringify({ text }));
+
+  for (let rowId = 0; rowId < corpus.length; rowId++) {
+    const chunks = splitText(corpus[rowId]);
+    for (let chunkIdx = 0; chunkIdx < chunks.length; chunkIdx++) {
+      kbLines.push(JSON.stringify({
+        text: chunks[chunkIdx],
+        metadata: {
+          row_id: rowId,
+          chunk_index: chunkIdx,
+          total_chunks: chunks.length,
+        },
+      }));
+    }
   }
+
   fs.writeFileSync(kbPath, kbLines.join("\n") + "\n", { encoding: "utf-8" });
 
   // 4. Write Test Cases (JSON)
@@ -120,7 +133,7 @@ async function main() {
 
   console.log("=========================================");
   console.log(`✅ Data preparation complete!`);
-  console.log(`- Knowledge Base: ${kbLines.length} records saved to knowledge_base.jsonl`);
+  console.log(`- Knowledge Base: ${corpus.length} rows → ${kbLines.length} chunks saved to knowledge_base.jsonl`);
   console.log(`- Test Cases: ${testCases.length} records saved to test_cases.json`);
   console.log("=========================================");
 }
