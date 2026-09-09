@@ -1,0 +1,19 @@
+{
+  "name": "tekmium-project",
+  "version": "1.0.0",
+  "description": "An AI-powered documentation assistant that uses Retrieval-Augmented Generation (RAG) to answer questions based on uploaded technical documentation.",
+  "main": "index.js",
+  "scripts": {
+    "prepare:data": "tsx dataset/prepare_fiqa_data.ts"
+  },
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/PhamAn0910/tekmium-project/issues"
+  },
+  "homepage": "https://github.com/PhamAn0910/tekmium-project#readme",
+  "devDependencies": {
+    "@types/node": "^26.5.0",
+    "tsx": "^4.23.13",
+    "typescript": "^7.0.2"
+  }
+}
