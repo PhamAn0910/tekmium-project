@@ -1,70 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import Markdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface AnswerCardProps {
   answer: string;
   durationMs: number;
   sourceCount: number;
-}
-
-/**
- * Parse answer text and convert [N] citation patterns into clickable links.
- */
-function renderAnswerWithCitations(text: string): React.ReactNode[] {
-  // First split by **bold** markers
-  const boldParts = text.split(/(\*\*.*?\*\*)/g);
-  
-  return boldParts.map((boldPart, i) => {
-    if (boldPart.startsWith('**') && boldPart.endsWith('**')) {
-      const innerText = boldPart.slice(2, -2);
-      // Process citations inside bold text just in case, though rare
-      const citationParts = innerText.split(/(\[\d+\])/g);
-      return (
-        <strong key={i} className="font-semibold text-on-surface">
-          {citationParts.map((part, j) => {
-            const citationMatch = part.match(/^\[(\d+)\]$/);
-            if (citationMatch) {
-              const num = citationMatch[1];
-              return (
-                <a
-                  key={`cite-${i}-${j}`}
-                  href={`#source-${Number(num) - 1}`}
-                  className="ml-0.5 inline-flex rounded border border-outline-variant/60 bg-surface-container px-1 py-[1px] font-mono text-[11px] font-medium leading-[14px] text-primary transition-colors hover:underline"
-                >
-                  [{num}]
-                </a>
-              );
-            }
-            return <span key={`text-${i}-${j}`}>{part}</span>;
-          })}
-        </strong>
-      );
-    }
-
-    // Process citations in normal text
-    const citationParts = boldPart.split(/(\[\d+\])/g);
-    return (
-      <span key={i}>
-        {citationParts.map((part, j) => {
-          const citationMatch = part.match(/^\[(\d+)\]$/);
-          if (citationMatch) {
-            const num = citationMatch[1];
-            return (
-              <a
-                key={`cite-${i}-${j}`}
-                href={`#source-${Number(num) - 1}`}
-                className="ml-0.5 inline-flex rounded border border-outline-variant/60 bg-surface-container px-1 py-[1px] font-mono text-[11px] font-medium leading-[14px] text-primary transition-colors hover:underline"
-              >
-                [{num}]
-              </a>
-            );
-          }
-          return <span key={`text-${i}-${j}`}>{part}</span>;
-        })}
-      </span>
-    );
-  });
 }
 
 export function AnswerCard({ answer, durationMs, sourceCount }: AnswerCardProps) {
@@ -76,6 +19,11 @@ export function AnswerCard({ answer, durationMs, sourceCount }: AnswerCardProps)
       setTimeout(() => setCopied(false), 2000);
     });
   }
+
+  // Pre-process answer to convert [1] to markdown links
+  const processedAnswer = answer.replace(/\[(\d+)\]/g, (match, p1) => {
+    return `[${match}](#source-${Number(p1) - 1})`;
+  });
 
   return (
     <article className="relative overflow-hidden rounded-lg border border-outline-variant bg-surface-container-lowest p-6">
@@ -110,10 +58,30 @@ export function AnswerCard({ answer, durationMs, sourceCount }: AnswerCardProps)
       </div>
 
       {/* Answer body */}
-      <div className="space-y-3 text-base leading-[26px] tracking-[-0.005em] text-on-surface">
-        {answer.split("\n\n").map((paragraph, i) => (
-          <p key={i}>{renderAnswerWithCitations(paragraph)}</p>
-        ))}
+      <div className="text-base leading-[26px] tracking-[-0.005em] text-on-surface">
+        <Markdown
+          remarkPlugins={[remarkGfm]}
+          components={{
+            a: ({ node, ...props }) => {
+              if (props.href?.startsWith("#source-")) {
+                return (
+                  <a
+                    {...props}
+                    className="ml-0.5 inline-flex rounded border border-outline-variant/60 bg-surface-container px-1 py-[1px] font-mono text-[11px] font-medium leading-[14px] text-primary transition-colors hover:underline"
+                  />
+                );
+              }
+              return <a {...props} className="text-primary hover:underline" />;
+            },
+            p: ({ node, ...props }) => <p {...props} className="mb-3 last:mb-0" />,
+            ul: ({ node, ...props }) => <ul {...props} className="list-disc pl-5 mb-3 space-y-1 last:mb-0" />,
+            ol: ({ node, ...props }) => <ol {...props} className="list-decimal pl-5 mb-3 space-y-1 last:mb-0" />,
+            li: ({ node, ...props }) => <li {...props} className="" />,
+            strong: ({ node, ...props }) => <strong {...props} className="font-semibold text-on-surface" />,
+          }}
+        >
+          {processedAnswer}
+        </Markdown>
       </div>
 
       {/* Footer */}
