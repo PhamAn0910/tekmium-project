@@ -7,7 +7,9 @@
     "prepare:data": "tsx scripts/prepare-fiqa-data.ts",
     "embed": "tsx scripts/embed-and-index.ts",
     "retrieve": "tsx scripts/retrieve.ts",
-    "verify:retrieval": "tsx scripts/verify-retrieval.ts"
+    "verify:retrieval": "tsx scripts/verify-retrieval.ts",
+    "ask": "tsx scripts/rag-answer.ts",
+    "verify:answers": "tsx scripts/verify-answers.ts"
   },
   "type": "module",
   "bugs": {

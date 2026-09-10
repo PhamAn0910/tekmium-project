@@ -137,7 +137,7 @@ Using the FiQA dataset (`dataset/knowledge_base.jsonl`):
 | ------------------- | ------------------------------------------- |
 | Frontend            | Next.js (App Router, Tailwind CSS)          |
 | Backend             | Next.js Route Handlers (Vercel Serverless)  |
-| LLM                 | Google Gemini 1.5 Flash (via Vercel AI SDK) |
+| LLM                 | Google Gemini 3.6 Flash (via Vercel AI SDK) |
 | Embedding Model     | gemini-embedding-001 (3072 dims, via Vercel AI SDK) |
 | Vector Database     | Pinecone Serverless                         |
 | Document Processing | Custom TypeScript Splitter                  |
@@ -188,5 +188,5 @@ In development.
 * [x] Chunking
 * [x] Embeddings + vector database
 * [x] Retrieval
-* [ ] LLM integration + source citation
+* [x] LLM integration + source citation
 * [ ] Basic UI
