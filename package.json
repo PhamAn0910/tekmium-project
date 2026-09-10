@@ -4,7 +4,8 @@
   "description": "An AI-powered documentation assistant that uses Retrieval-Augmented Generation (RAG) to answer questions based on uploaded technical documentation.",
   "main": "index.js",
   "scripts": {
-    "prepare:data": "tsx dataset/prepare_fiqa_data.ts"
+    "prepare:data": "tsx dataset/prepare_fiqa_data.ts",
+    "embed": "tsx dataset/embed-and-index.ts"
   },
   "type": "module",
   "bugs": {
@@ -15,5 +16,11 @@
     "@types/node": "^26.5.0",
     "tsx": "^4.23.13",
     "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "@ai-sdk/google": "^4.0.67",
+    "@pinecone-database/pinecone": "^9.0.0",
+    "ai": "^7.0.97",
+    "dotenv": "^17.4.2"
   }
 }
