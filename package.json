@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "prepare:data": "tsx scripts/prepare-fiqa-data.ts",
-    "embed": "tsx scripts/embed-and-index.ts"
+    "embed": "tsx scripts/embed-and-index.ts",
+    "retrieve": "tsx scripts/retrieve.ts",
+    "verify:retrieval": "tsx scripts/verify-retrieval.ts"
   },
   "type": "module",
   "bugs": {
