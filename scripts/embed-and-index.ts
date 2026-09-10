@@ -102,7 +102,7 @@ async function main() {
   }
 
   // 1. Load knowledge base
-  const kbPath = path.join(__dirname, "knowledge_base.jsonl");
+  const kbPath = path.join(__dirname, "..", "dataset", "knowledge_base.jsonl");
   const records = loadKnowledgeBase(kbPath);
   console.log(`Loaded ${records.length} chunks from knowledge_base.jsonl`);
 

@@ -73,8 +73,8 @@ function parseContexts(ctxRaw: any): string[] {
 }
 
 async function main() {
-  const kbPath = path.join(__dirname, "knowledge_base.jsonl");
-  const tcPath = path.join(__dirname, "test_cases.json");
+  const kbPath = path.join(__dirname, "..", "dataset", "knowledge_base.jsonl");
+  const tcPath = path.join(__dirname, "..", "dataset", "test_cases.json");
 
   console.log("Downloading dataset subsets via HuggingFace API...");
 

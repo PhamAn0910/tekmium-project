@@ -4,8 +4,8 @@
   "description": "An AI-powered documentation assistant that uses Retrieval-Augmented Generation (RAG) to answer questions based on uploaded technical documentation.",
   "main": "index.js",
   "scripts": {
-    "prepare:data": "tsx dataset/prepare_fiqa_data.ts",
-    "embed": "tsx dataset/embed-and-index.ts"
+    "prepare:data": "tsx scripts/prepare-fiqa-data.ts",
+    "embed": "tsx scripts/embed-and-index.ts"
   },
   "type": "module",
   "bugs": {
