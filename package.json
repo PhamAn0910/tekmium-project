@@ -4,6 +4,10 @@
   "description": "An AI-powered documentation assistant that uses Retrieval-Augmented Generation (RAG) to answer questions based on uploaded technical documentation.",
   "main": "index.js",
   "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
     "prepare:data": "tsx scripts/prepare-fiqa-data.ts",
     "embed": "tsx scripts/embed-and-index.ts",
     "retrieve": "tsx scripts/retrieve.ts",
@@ -18,13 +22,21 @@
   "homepage": "https://github.com/PhamAn0910/tekmium-project#readme",
   "devDependencies": {
     "@types/node": "^26.5.0",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
     "tsx": "^4.23.13",
     "typescript": "^7.0.2"
   },
   "dependencies": {
     "@ai-sdk/google": "^4.0.67",
     "@pinecone-database/pinecone": "^9.0.0",
+    "@tailwindcss/postcss": "^4.3.3",
     "ai": "^7.0.97",
-    "dotenv": "^17.4.2"
+    "dotenv": "^17.4.2",
+    "next": "^16.3.4",
+    "postcss": "^8.5.28",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "tailwindcss": "^4.3.3"
   }
 }
