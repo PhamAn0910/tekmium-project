@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
 import { google } from "@ai-sdk/google";
 import { generateText } from "ai";
-import { retrieveRelevantChunks, type RetrievedChunk } from "./retrieve.js";
+import { retrieveRelevantChunks, type RetrievedChunk } from "./retrieve";
 
 // ---------------------------------------------------------------------------
 // Config

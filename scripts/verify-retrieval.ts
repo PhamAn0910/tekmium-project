@@ -2,7 +2,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
-import { retrieveRelevantChunks, type RetrievedChunk } from "./retrieve.js";
+import { retrieveRelevantChunks, type RetrievedChunk } from "./retrieve";
 
 // ---------------------------------------------------------------------------
 // Config
