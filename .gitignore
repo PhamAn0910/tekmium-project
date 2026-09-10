@@ -18,3 +18,13 @@ node_modules/
 *.swp
 .idea/
 .vscode/
+
+# Next.js & build
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+
+# Design & external assets
+stitch_tekmium_rag_interface/
