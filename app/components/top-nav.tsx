@@ -7,8 +7,11 @@ export function TopNav() {
 
   useEffect(() => {
     fetch("/api/stats")
-      .then((res) => res.json())
-      .then((data) => setVectorCount(data.totalVectors))
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch");
+        return res.json();
+      })
+      .then((data) => setVectorCount(typeof data.totalVectors === "number" ? data.totalVectors : null))
       .catch(() => setVectorCount(null));
   }, []);
 
