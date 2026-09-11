@@ -3,18 +3,18 @@
 const EXAMPLE_QUERIES = [
   {
     question:
-      "How to deposit a cheque issued to an associate in my business into my business account?",
-    topic: "Banking",
+      "How do I stream intermediate tool results from a subagent?",
+    topic: "Deep Agents",
   },
   {
     question:
-      "What are the main risks of investing in a single stock versus a diversified portfolio?",
-    topic: "Investing",
+      "How do I use a custom retrieval tool with LangChain?",
+    topic: "LangChain",
   },
   {
     question:
-      "Is it better to pay off student loans early or invest the extra money?",
-    topic: "Personal Finance",
+      "What are the different RAG patterns supported in Deep Agents?",
+    topic: "RAG",
   },
 ];
 
@@ -48,7 +48,7 @@ export function EmptyState({ onSelectQuery }: EmptyStateProps) {
             Or start with an example query:
           </span>
           <span className="font-mono text-[11px] font-medium leading-[14px] tracking-[0.02em] text-on-surface-variant">
-            FiQA dataset
+            LangChain docs
           </span>
         </div>
 
