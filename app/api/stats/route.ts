@@ -3,6 +3,8 @@ import { Pinecone } from "@pinecone-database/pinecone";
 
 const PINECONE_INDEX_NAME = "tekmium-rag";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const apiKey = process.env.PINECONE_API_KEY;
