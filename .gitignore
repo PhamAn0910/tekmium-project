@@ -28,3 +28,6 @@ dist/
 
 # Design & external assets
 stitch_tekmium_rag_interface/
+
+# Local uploaded/test documents
+dataset/rag.md

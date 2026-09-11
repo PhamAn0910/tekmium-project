@@ -8,6 +8,7 @@ import { QuestionCard } from "./components/question-card";
 import { AnswerCard } from "./components/answer-card";
 import { SourceCard } from "./components/source-card";
 import { LoadingSkeleton } from "./components/loading-skeleton";
+import { UploadModal } from "./components/upload-modal";
 
 interface Source {
   id: string;
@@ -35,6 +36,8 @@ export default function HomePage() {
   const [state, setState] = useState<AppState>("idle");
   const [result, setResult] = useState<RAGResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [uploadOpen, setUploadOpen] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const handleSubmit = useCallback(async () => {
     const trimmed = query.trim();
@@ -70,13 +73,19 @@ export default function HomePage() {
   }
 
   function handleNewQuery() {
-    // Allow submitting follow-up questions from the result state
     handleSubmit();
+  }
+
+  function handleUploadComplete() {
+    setRefreshKey((k) => k + 1);
   }
 
   return (
     <>
-      <TopNav />
+      <TopNav
+        onUploadClick={() => setUploadOpen(true)}
+        refreshKey={refreshKey}
+      />
 
       <main className="flex flex-1 flex-col items-center justify-center px-4 pb-36 pt-8 sm:px-6">
         {state === "idle" && (
@@ -159,6 +168,12 @@ export default function HomePage() {
         onChange={setQuery}
         onSubmit={state === "result" ? handleNewQuery : handleSubmit}
         isLoading={state === "loading"}
+      />
+
+      <UploadModal
+        open={uploadOpen}
+        onClose={() => setUploadOpen(false)}
+        onUploadComplete={handleUploadComplete}
       />
     </>
   );

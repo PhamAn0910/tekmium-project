@@ -189,4 +189,4 @@ In development.
 * [x] Embeddings + vector database
 * [x] Retrieval
 * [x] LLM integration + source citation
-* [ ] Basic UI
+* [x] Basic UI

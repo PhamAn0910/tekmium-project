@@ -2,7 +2,12 @@
 
 import { useEffect, useState } from "react";
 
-export function TopNav() {
+interface TopNavProps {
+  onUploadClick?: () => void;
+  refreshKey?: number;
+}
+
+export function TopNav({ onUploadClick, refreshKey }: TopNavProps) {
   const [vectorCount, setVectorCount] = useState<number | null>(null);
 
   useEffect(() => {
@@ -13,7 +18,7 @@ export function TopNav() {
       })
       .then((data) => setVectorCount(typeof data.totalVectors === "number" ? data.totalVectors : null))
       .catch(() => setVectorCount(null));
-  }, []);
+  }, [refreshKey]);
 
   return (
     <header className="flex h-14 w-full shrink-0 items-center justify-between border-b border-outline-variant bg-surface-container-lowest px-6 sticky top-0 z-30">
@@ -30,8 +35,17 @@ export function TopNav() {
         </span>
       </div>
 
-      {/* Status */}
+      {/* Actions + Status */}
       <div className="flex items-center gap-3">
+        {onUploadClick && (
+          <button
+            onClick={onUploadClick}
+            className="flex h-8 items-center gap-1.5 rounded-lg border border-outline-variant bg-surface-container-lowest px-3 text-xs font-medium text-on-surface-variant transition-colors hover:border-primary/50 hover:bg-surface-container hover:text-on-surface"
+          >
+            <span className="material-symbols-outlined text-[16px]">upload_file</span>
+            <span>Upload</span>
+          </button>
+        )}
         {vectorCount !== null && (
           <div className="flex items-center gap-2 rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-1">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />

@@ -2,9 +2,8 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
-import { google } from "@ai-sdk/google";
-import { embedMany } from "ai";
 import { Pinecone } from "@pinecone-database/pinecone";
+import { embedAndUpsert } from "@/lib/vector-store";
 
 // ---------------------------------------------------------------------------
 // Config
@@ -17,15 +16,7 @@ const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.local") });
 
 const PINECONE_INDEX_NAME = "tekmium-rag";
-const EMBEDDING_MODEL = "gemini-embedding-001";
 const EMBEDDING_DIMENSION = 3072;
-
-// Free tier: 100 embed requests/min. Each batchEmbedContents counts as 1 request,
-// but embedMany splits into sub-batches of maxEmbeddingsPerCall (100) and fires
-// them in parallel. To stay under 100 RPM, we send small serial batches with delays.
-const EMBED_BATCH_SIZE = 50; // texts per embedMany call (single API request)
-const UPSERT_BATCH_SIZE = 100; // Pinecone recommended max per upsert
-const RATE_LIMIT_DELAY_MS = 2_000; // delay between embed batches
 
 // ---------------------------------------------------------------------------
 // Types
@@ -54,40 +45,6 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-/**
- * Embed a batch of texts using the Vercel AI SDK.
- * Keeps batch size ≤ maxEmbeddingsPerCall (100) so it stays as a single
- * batchEmbedContents API request. Retries on 429 with exponential backoff.
- */
-async function embedBatchWithRetry(
-  texts: string[],
-  maxRetries = 5
-): Promise<number[][]> {
-  for (let attempt = 0; attempt < maxRetries; attempt++) {
-    try {
-      const { embeddings } = await embedMany({
-        model: google.embedding(EMBEDDING_MODEL),
-        values: texts,
-        maxRetries: 0, // we handle retries ourselves
-      });
-      return embeddings;
-    } catch (err: any) {
-      const isRateLimit = err?.statusCode === 429 || err?.lastError?.statusCode === 429;
-      if (isRateLimit && attempt < maxRetries - 1) {
-        // Parse retry delay from error or use exponential backoff
-        const backoff = Math.min(60_000, (2 ** attempt) * 15_000);
-        console.log(
-          `  ⏳ Rate limited. Waiting ${(backoff / 1000).toFixed(0)}s before retry (attempt ${attempt + 1}/${maxRetries})...`
-        );
-        await sleep(backoff);
-        continue;
-      }
-      throw err;
-    }
-  }
-  throw new Error("Unreachable");
-}
-
 // ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
@@ -102,9 +59,10 @@ async function main() {
   }
 
   // 1. Load knowledge base
-  const kbPath = path.join(__dirname, "..", "dataset", "knowledge_base.jsonl");
+  const defaultKbPath = path.join(__dirname, "..", "dataset", "knowledge_base.jsonl");
+  const kbPath = process.argv[2] ? path.resolve(process.argv[2]) : defaultKbPath;
   const records = loadKnowledgeBase(kbPath);
-  console.log(`Loaded ${records.length} chunks from knowledge_base.jsonl`);
+  console.log(`Loaded ${records.length} chunks from ${path.basename(kbPath)}`);
 
   // 2. Initialize Pinecone and ensure index exists
   const pc = new Pinecone({ apiKey: process.env.PINECONE_API_KEY });
@@ -146,65 +104,19 @@ async function main() {
     console.log(`Pinecone index "${PINECONE_INDEX_NAME}" already exists.`);
   }
 
-  const index = pc.index(PINECONE_INDEX_NAME);
-
-  // 3. Embed and upsert in batches
-  const totalBatches = Math.ceil(records.length / EMBED_BATCH_SIZE);
-  let totalEmbedded = 0;
-  let totalUpserted = 0;
-
-  for (let batchIdx = 0; batchIdx < totalBatches; batchIdx++) {
-    const start = batchIdx * EMBED_BATCH_SIZE;
-    const end = Math.min(start + EMBED_BATCH_SIZE, records.length);
-    const batch = records.slice(start, end);
-
-    console.log(
-      `\nBatch ${batchIdx + 1}/${totalBatches}: embedding chunks ${start}–${end - 1}...`
-    );
-
-    // Generate embeddings with rate-limit handling
-    const texts = batch.map((r) => r.text);
-    const embeddings = await embedBatchWithRetry(texts);
-    totalEmbedded += embeddings.length;
-    console.log(`  ✓ Embedded ${totalEmbedded}/${records.length} chunks`);
-
-    // Prepare Pinecone records
-    const pineconeRecords = batch.map((record, i) => ({
-      id: `row_${record.metadata.row_id}_chunk_${record.metadata.chunk_index}`,
-      values: embeddings[i],
-      metadata: {
-        text: record.text,
-        row_id: record.metadata.row_id,
-        chunk_index: record.metadata.chunk_index,
-        total_chunks: record.metadata.total_chunks,
-      },
-    }));
-
-    // Upsert to Pinecone (sub-batch if needed)
-    for (let i = 0; i < pineconeRecords.length; i += UPSERT_BATCH_SIZE) {
-      const upsertBatch = pineconeRecords.slice(i, i + UPSERT_BATCH_SIZE);
-      await index.upsert({ records: upsertBatch });
-      totalUpserted += upsertBatch.length;
-      console.log(`  ✓ Upserted ${totalUpserted}/${records.length} vectors`);
-    }
-
-    // Rate-limit delay between batches (skip after last batch)
-    if (batchIdx < totalBatches - 1) {
-      console.log(
-        `  Waiting ${(RATE_LIMIT_DELAY_MS / 1000).toFixed(0)}s for rate limit...`
-      );
-      await sleep(RATE_LIMIT_DELAY_MS);
-    }
-  }
+  // 3. Embed and upsert using shared library
+  const texts = records.map((r) => r.text);
+  console.log(`\nEmbedding and upserting ${texts.length} chunks...`);
+  const totalUpserted = await embedAndUpsert(texts, "fiqa");
 
   // 4. Verify by checking index stats
   console.log("\nVerifying index stats...");
-  // Small delay for Pinecone to reflect upserts
   await sleep(5000);
+  const index = pc.index(PINECONE_INDEX_NAME);
   const stats = await index.describeIndexStats();
   console.log(`\n=========================================`);
   console.log(`✅ Embedding + indexing complete!`);
-  console.log(`- Model: ${EMBEDDING_MODEL} (${EMBEDDING_DIMENSION} dims)`);
+  console.log(`- Vectors upserted this run: ${totalUpserted}`);
   console.log(`- Index: ${PINECONE_INDEX_NAME}`);
   console.log(`- Vectors in index: ${stats.totalRecordCount}`);
   console.log(`=========================================`);
