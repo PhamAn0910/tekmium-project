@@ -1,8 +1,7 @@
 import { google } from "@ai-sdk/google";
 import { embedMany } from "ai";
-import { Pinecone } from "@pinecone-database/pinecone";
+import { pineconeIndex } from "./pinecone";
 
-const PINECONE_INDEX_NAME = "tekmium-rag";
 const EMBEDDING_MODEL = "gemini-embedding-001";
 
 const EMBED_BATCH_SIZE = 50;
@@ -42,15 +41,6 @@ async function embedBatchWithRetry(
   throw new Error("Unreachable");
 }
 
-function getPineconeIndex() {
-  const apiKey = process.env.PINECONE_API_KEY;
-  if (!apiKey) {
-    throw new Error("PINECONE_API_KEY is not set.");
-  }
-  const pc = new Pinecone({ apiKey });
-  return pc.index(PINECONE_INDEX_NAME);
-}
-
 /**
  * Embed an array of text chunks and upsert them into the Pinecone index.
  * Each chunk is assigned a stable ID based on its position and the given prefix.
@@ -64,7 +54,7 @@ export async function embedAndUpsert(
     throw new Error("GOOGLE_GENERATIVE_AI_API_KEY is not set.");
   }
 
-  const index = getPineconeIndex();
+  const index = pineconeIndex;
   const totalBatches = Math.ceil(chunks.length / EMBED_BATCH_SIZE);
   let totalUpserted = 0;
 

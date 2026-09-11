@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
 import { google } from "@ai-sdk/google";
 import { embed } from "ai";
-import { Pinecone } from "@pinecone-database/pinecone";
+import { pineconeIndex } from "../lib/pinecone";
 
 // ---------------------------------------------------------------------------
 // Config
@@ -14,7 +14,6 @@ const __dirname = path.dirname(__filename);
 
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.local") });
 
-const PINECONE_INDEX_NAME = "tekmium-rag";
 const EMBEDDING_MODEL = "gemini-embedding-001";
 
 const DEFAULT_TOP_K = 5;
@@ -39,19 +38,6 @@ export interface RetrievedChunk {
 // Retrieval
 // ---------------------------------------------------------------------------
 
-let pineconeIndex: ReturnType<Pinecone["index"]> | null = null;
-
-function getIndex(): ReturnType<Pinecone["index"]> {
-  if (!pineconeIndex) {
-    if (!process.env.PINECONE_API_KEY) {
-      throw new Error("PINECONE_API_KEY is not set in .env.local");
-    }
-    const pc = new Pinecone({ apiKey: process.env.PINECONE_API_KEY });
-    pineconeIndex = pc.index(PINECONE_INDEX_NAME);
-  }
-  return pineconeIndex;
-}
-
 /**
  * Retrieve the most relevant chunks from the vector database for a query.
  *
@@ -75,8 +61,7 @@ export async function retrieveRelevantChunks(
   });
 
   // 2. Query Pinecone
-  const index = getIndex();
-  const response = await index.query({
+  const response = await pineconeIndex.query({
     vector: embedding,
     topK,
     includeMetadata: true,
